@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AI Chatbot</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 550px;
+            background: #1e293b;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-header {
+            background: #3b82f6;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 12px;
+            max-width: 70%;
+        }
+
+        .user {
+            background: #3b82f6;
+            color: white;
+            margin-left: auto;
+        }
+
+        .bot {
+            background: #334155;
+            color: white;
+        }
+
+        .input-area {
+            display: flex;
+            border-top: 1px solid #444;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            outline: none;
+            background: #1e293b;
+            color: white;
+        }
+
+        button {
+            padding: 12px;
+            background: #3b82f6;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .typing {
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">AI Support Assistant 🤖</div>
+
+        <div class="chat-box" id="chatBox"></div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type your message..." onkeypress="handleKey(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function addMessage(message, className) {
+            let div = document.createElement("div");
+            div.className = "message " + className;
+            div.innerText = message;
+            document.getElementById("chatBox").appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showTyping() {
+            let typing = document.createElement("div");
+            typing.className = "typing";
+            typing.id = "typing";
+            typing.innerText = "Bot is typing...";
+            document.getElementById("chatBox").appendChild(typing);
+        }
+
+        function removeTyping() {
+            let typing = document.getElementById("typing");
+            if (typing) typing.remove();
+        }
+
+        function sendMessage() {
+            let input = document.getElementById("userInput");
+            let userText = input.value;
+
+            if (userText.trim() === "") return;
+
+            addMessage(userText, "user");
+            input.value = "";
+
+            showTyping();
+
+            setTimeout(() => {
+                fetch("/get", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "msg=" + encodeURIComponent(userText)
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        removeTyping();
+                        addMessage(data, "bot");
+                    });
+            }, 800);
+        }
+
+        function handleKey(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+    </script>
+
+</body>
+
+</html>
